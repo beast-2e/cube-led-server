@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LED server</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="js/audio.js" defer></script>
+  </head>
+
+  <body class="p-4 flex flex-col gap-2">
+    <h1 class="mb-2 text-2xl font-bold">LED server</h1>
+
+    <details>
+      <summary class="mb-2">How this works</summary>
+      <p class="mb-2 text-neutral-500">
+        There's an ESP32 somewhere in EC that is connected to the MIT network.
+        It accepts a WebSocket connection and accepts 3 bytes at a time to display an RGB color.
+      </p>
+      <p></p>
+    </details>
+
+    <div class="flex gap-2">
+      <input
+        class="border-2 px-2 py-1"
+        type="text"
+        id="ip-input"
+        placeholder="Server IP"
+      />
+      <button
+        class="px-4 bg-neutral-200 hover:bg-neutral-300 transition-colors active:bg-neutral-400"
+        id="connect-button"
+        onclick="connect()"
+      >
+        Connect
+      </button>
+    </div>
+
+    <p class="my-2">Status: <span id="connect-status">Disconnected</span></p>
+
+    <div class="max-w-xl border-2">
+      <div id="red-bar" class="h-10 bg-red-500"></div>
+      <div id="green-bar" class="h-10 bg-green-500"></div>
+      <div id="blue-bar" class="h-10 bg-blue-500"></div>
+    </div>
+  </body>
+</html>
