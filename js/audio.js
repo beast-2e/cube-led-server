@@ -18,7 +18,7 @@ class MicrophoneFFT {
     this.midRangeHz = [250, 4000];
     this.trebleRangeHz = [4000, 20000];
 
-    fetch('http://kv.wfeng.dev/esp:ip').then(async (res) => {
+    fetch('https://kv.wfeng.dev/esp:ip').then(async (res) => {
       this.server_ip = await res.text();
       ipInputEl.value = this.server_ip;
       this.connect();
@@ -38,11 +38,11 @@ class MicrophoneFFT {
     this.ws.onopen = () => {
       console.log(`Connected to server at ${this.server_ip}`);
       connectStatusEl.textContent = 'Connected';
-    }
+    };
     this.ws.onclose = () => {
       console.log('Disconnected from server');
       connectStatusEl.textContent = 'Disconnected';
-    }
+    };
   }
 
   hzRangeToIdxs([low, high]) {
