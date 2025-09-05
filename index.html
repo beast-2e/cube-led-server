@@ -3,23 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LED server</title>
+    <link rel="icon" href="https://fav.farm/🎲" />
+    <title>Beast Cube</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script src="js/audio.js" defer></script>
   </head>
 
-  <body class="p-4 flex flex-col gap-2">
-    <h1 class="mb-2 text-2xl font-bold">LED server</h1>
+  <body class="p-4 flex flex-col gap-2 max-w-3xl">
+    <h1 class="mb-2 text-2xl font-bold">Beast Cube</h1>
 
-    <details>
-      <summary class="mb-2">How this works</summary>
-      <p class="mb-2 text-neutral-500">
-        There's an ESP32 somewhere in EC that is connected to the MIT network.
-        It accepts a WebSocket connection and accepts 3 bytes at a time to display an RGB color.
-      </p>
-      <p></p>
+    <p>Instructions:</p>
+    <ul class="mb-2 list-disc list-inside">
+      <li>Connect to MIT or MIT SECURE</li>
+      <li>Select a microphone source</li>
+      <li>Play music and watch the Cube light up with pretty colors!</li>
+    </ul>
+
+    <details class="text-neutral-500 flex">
+      <summary class="mb-2 cursor-pointer">How this works</summary>
+      <div class="flex flex-col gap-2 mb-2">
+        <p>
+          In Sept. 2025 we put an ESP32 on 2E that is connected to the MIT
+          network. The LAN address of the ESP is pushed to
+          <a class="underline" href="https://kv.wfeng.dev/esp:ip"
+            >https://kv.wfeng.dev/esp:ip</a
+          >
+          on startup. It accepts a WebSocket connection and accepts 3 bytes at a
+          time to display an RGB color.
+        </p>
+
+        <p>
+          In active development as of fall 2025&mdash;trying to add more
+          controls to the site and also wire up the cube with LED lights.
+        </p>
+
+        <p>
+          Email
+          <a class="underline" href="mailto:wyf@mit.edu">wyf@mit.edu</a> with
+          questions :)
+        </p>
+      </div>
     </details>
 
     <div class="flex gap-2">
@@ -40,7 +65,7 @@
 
     <p class="my-2">Status: <span id="connect-status">Disconnected</span></p>
 
-    <div class="max-w-xl border-2">
+    <div class="border-2">
       <div id="red-bar" class="h-10 bg-red-500"></div>
       <div id="green-bar" class="h-10 bg-green-500"></div>
       <div id="blue-bar" class="h-10 bg-blue-500"></div>
