@@ -13,36 +13,52 @@ class MicrophoneFFT {
     this.animationId = null;
 
     // Bounds, in Hz
-    // TODO: allow editing
     this.bassRangeHz = [20, 250];
     this.midRangeHz = [250, 4000];
     this.trebleRangeHz = [4000, 20000];
 
-    fetch('https://kv.wfeng.dev/esp:ip').then(async (res) => {
-      this.server_ip = await res.text();
-      ipInputEl.value = this.server_ip;
+    this.server_ips = []; // now an array
+    this.ws = []; // array of websocket connections
+
+    // Fetch both endpoints
+    Promise.all([
+      fetch('https://kv.wfeng.dev/esp:ip').then((r) => r.text()),
+      fetch('https://kv.wfeng.dev/esp:ip:cube').then((r) => r.text()),
+    ]).then(([ip1, ip2]) => {
+      this.server_ips = [ip1.trim(), ip2.trim()];
+      ipInputEl.value = this.server_ips.join(', ');
       this.connect();
     });
 
     window.connect = () => this.connect();
-    // Throttling
     this.lastSent = 0;
   }
 
   connect() {
-    // Get IP address input
-    this.server_ip = document.getElementById('ip-input').value;
+    // Get IP addresses input (comma-separated)
+    this.server_ips = document
+      .getElementById('ip-input')
+      .value.split(',')
+      .map((ip) => ip.trim())
+      .filter((ip) => ip.length > 0);
 
-    if (this.ws) this.ws.close();
-    this.ws = new WebSocket(`ws://${this.server_ip}/ws`);
-    this.ws.onopen = () => {
-      console.log(`Connected to server at ${this.server_ip}`);
-      connectStatusEl.textContent = 'Connected';
-    };
-    this.ws.onclose = () => {
-      console.log('Disconnected from server');
-      connectStatusEl.textContent = 'Disconnected';
-    };
+    // Close existing sockets
+    this.ws.forEach((sock) => sock.close());
+    this.ws = [];
+
+    // Open new sockets
+    this.server_ips.forEach((ip) => {
+      const sock = new WebSocket(`ws://${ip}/ws`);
+      sock.onopen = () => {
+        console.log(`Connected to server at ${ip}`);
+        connectStatusEl.textContent = 'Connected';
+      };
+      sock.onclose = () => {
+        console.log(`Disconnected from server at ${ip}`);
+        connectStatusEl.textContent = 'Disconnected';
+      };
+      this.ws.push(sock);
+    });
   }
 
   hzRangeToIdxs([low, high]) {
@@ -94,9 +110,6 @@ class MicrophoneFFT {
     this.analyser.getByteFrequencyData(this.dataArray);
     this.animationId = requestAnimationFrame(() => this._tick());
 
-    // Get bass, midrange, treble frequencies
-    // FOR NOW, get the net energy
-
     let bassEnergy = this.getEnergy(this.bassRangeHz);
     let midrangeEnergy = this.getEnergy(this.midRangeHz);
     let trebleEnergy = this.getEnergy(this.trebleRangeHz);
@@ -109,20 +122,24 @@ class MicrophoneFFT {
     document.querySelector('#green-bar').style.width = `${midrangeWidth}%`;
     document.querySelector('#blue-bar').style.width = `${trebleWidth}%`;
 
-    // Send stuff to websocket
     try {
       if (performance.now() - this.lastSent < 32) return;
       this.lastSent = performance.now();
 
-      this.ws.send(
-        new Uint8ClampedArray([
-          Math.max(1, bassEnergy * 255),
-          Math.max(1, midrangeEnergy * 255),
-          Math.max(1, trebleEnergy * 255),
-        ]).buffer
-      );
+      const payload = new Uint8ClampedArray([
+        Math.max(1, bassEnergy * 255),
+        Math.max(1, midrangeEnergy * 255),
+        Math.max(1, trebleEnergy * 255),
+      ]).buffer;
+
+      // Send to all connected WebSockets
+      this.ws.forEach((sock) => {
+        if (sock.readyState === WebSocket.OPEN) {
+          sock.send(payload);
+        }
+      });
     } catch (err) {
-      // console.error('WebSocket send error:', err);
+      // ignore send errors
     }
   }
 }
