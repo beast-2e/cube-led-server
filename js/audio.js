@@ -21,14 +21,17 @@ class MicrophoneFFT {
     this.ws = []; // array of websocket connections
 
     // Fetch both endpoints
-    Promise.all([
-      fetch('https://kv.wfeng.dev/esp:ip').then((r) => r.text()),
-      fetch('https://kv.wfeng.dev/esp:ip:cube').then((r) => r.text()),
-    ]).then(([ip1, ip2]) => {
-      this.server_ips = [ip1.trim(), ip2.trim()];
-      ipInputEl.value = this.server_ips.join(', ');
-      this.connect();
-    });
+    // Promise.all([
+    //   fetch('https://kv.wfeng.dev/esp:ip').then((r) => r.text()),
+    //   fetch('https://kv.wfeng.dev/esp:ip:cube').then((r) => r.text()),
+    // ]).then(([ip1, ip2]) => {
+    //   this.server_ips = [ip1.trim(), ip2.trim()];
+    //   ipInputEl.value = this.server_ips.join(', ');
+    //   this.connect();
+    // });
+    this.server_ips = ['beast-lights.wfeng.dev'];
+    ipInputEl.value = this.server_ips.join(', ');
+    this.connect();
 
     window.connect = () => this.connect();
     this.lastSent = 0;
@@ -48,7 +51,7 @@ class MicrophoneFFT {
 
     // Open new sockets
     this.server_ips.forEach((ip) => {
-      const sock = new WebSocket(`ws://${ip}/ws`);
+      const sock = new WebSocket(`wss://${ip}/ws`);
       sock.onopen = () => {
         console.log(`Connected to server at ${ip}`);
         connectStatusEl.textContent = 'Connected';
